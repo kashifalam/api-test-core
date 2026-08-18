@@ -1,0 +1,26 @@
+environment: qa
+
+services:
+  order:
+    baseUrl: https://order.qa.internal/api/v1
+  payment:
+    baseUrl: https://payment.qa.internal/api/v1
+
+databases:
+  orderDb:
+    jdbcUrl: jdbc:postgresql://pg.qa.internal:5432/orders
+    username: ${ORDER_DB_USER}
+    password: ${ORDER_DB_PASSWORD}
+    maxPoolSize: 5
+
+redis:
+  host: redis.qa.internal
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  database: 0
+
+auth:
+  tokenUrl: https://auth.qa.internal/oauth/token
+  clientId: ${AUTH_CLIENT_ID}
+  clientSecret: ${AUTH_CLIENT_SECRET}
+  scope: api.read api.write

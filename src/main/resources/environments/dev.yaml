@@ -1,0 +1,25 @@
+environment: dev
+
+services:
+  order:
+    baseUrl: http://localhost:8081/api/v1
+  payment:
+    baseUrl: http://localhost:8082/api/v1
+
+databases:
+  orderDb:
+    jdbcUrl: jdbc:postgresql://localhost:5432/orders
+    username: ${ORDER_DB_USER}
+    password: ${ORDER_DB_PASSWORD}
+    maxPoolSize: 3
+
+redis:
+  host: localhost
+  port: 6379
+  database: 0
+
+auth:
+  tokenUrl: http://localhost:8080/oauth/token
+  clientId: ${AUTH_CLIENT_ID}
+  clientSecret: ${AUTH_CLIENT_SECRET}
+  scope: api.read api.write
