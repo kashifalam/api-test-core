@@ -7,11 +7,14 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 import java.util.function.Supplier;
 
+/**
+ * Retries idempotent HTTP calls on transient failures.
+ */
 public final class RetryPolicy {
 
     private static final Logger LOG = LoggerFactory.getLogger(RetryPolicy.class);
-    private static final int MAX_ATTEMPTS = 3;
-    private static final long BACKOFF_MS = 500;
+    private static final int MAX_ATTEMPTS = Integer.getInteger("apitest.retry.maxAttempts", 3);
+    private static final long BACKOFF_MS = Long.getLong("apitest.retry.backoffMs", 500L);
     private static final Set<Integer> RETRYABLE_STATUS = Set.of(429, 502, 503, 504);
 
     private RetryPolicy() {
