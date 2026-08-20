@@ -2,220 +2,71 @@ package com.org.apitest.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Immutable environment configuration loaded from YAML.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EnvironmentConfig {
+public record EnvironmentConfig(
+        String environment,
+        ServicesConfig services,
+        DatabasesConfig databases,
+        RedisConfig redis,
+        AuthConfig auth) {
 
-    private String environment;
-    private ServicesConfig services = new ServicesConfig();
-    private DatabasesConfig databases = new DatabasesConfig();
-    private RedisConfig redis = new RedisConfig();
-    private AuthConfig auth = new AuthConfig();
+    private static final int DEFAULT_MAX_POOL_SIZE = 5;
+    private static final int DEFAULT_REDIS_PORT = 6379;
+    private static final int DEFAULT_REDIS_DATABASE = 0;
+    private static final String DEFAULT_REDIS_HOST = "localhost";
 
-    public String getEnvironment() {
-        return environment;
-    }
-
-    public void setEnvironment(String environment) {
-        this.environment = environment;
-    }
-
-    public ServicesConfig getServices() {
-        return services;
-    }
-
-    public void setServices(ServicesConfig services) {
-        this.services = services;
-    }
-
-    public DatabasesConfig getDatabases() {
-        return databases;
-    }
-
-    public void setDatabases(DatabasesConfig databases) {
-        this.databases = databases;
-    }
-
-    public RedisConfig getRedis() {
-        return redis;
-    }
-
-    public void setRedis(RedisConfig redis) {
-        this.redis = redis;
-    }
-
-    public AuthConfig getAuth() {
-        return auth;
-    }
-
-    public void setAuth(AuthConfig auth) {
-        this.auth = auth;
+    public EnvironmentConfig {
+        services = services != null ? services : new ServicesConfig(null, null);
+        databases = databases != null ? databases : new DatabasesConfig(null);
+        redis = redis != null ? redis : new RedisConfig(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT, null,
+                DEFAULT_REDIS_DATABASE);
+        auth = auth != null ? auth : new AuthConfig(null, null, null, null);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ServicesConfig {
-        private ServiceEndpoint order = new ServiceEndpoint();
-        private ServiceEndpoint payment = new ServiceEndpoint();
-
-        public ServiceEndpoint getOrder() {
-            return order;
-        }
-
-        public void setOrder(ServiceEndpoint order) {
-            this.order = order;
-        }
-
-        public ServiceEndpoint getPayment() {
-            return payment;
-        }
-
-        public void setPayment(ServiceEndpoint payment) {
-            this.payment = payment;
+    public record ServicesConfig(ServiceEndpoint order, ServiceEndpoint payment) {
+        public ServicesConfig {
+            order = order != null ? order : new ServiceEndpoint(null);
+            payment = payment != null ? payment : new ServiceEndpoint(null);
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ServiceEndpoint {
-        private String baseUrl;
+    public record ServiceEndpoint(String baseUrl) {
+    }
 
-        public String getBaseUrl() {
-            return baseUrl;
-        }
-
-        public void setBaseUrl(String baseUrl) {
-            this.baseUrl = baseUrl;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record DatabasesConfig(JdbcConfig orderDb) {
+        public DatabasesConfig {
+            orderDb = orderDb != null ? orderDb : new JdbcConfig(null, null, null, DEFAULT_MAX_POOL_SIZE);
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class DatabasesConfig {
-        private JdbcConfig orderDb = new JdbcConfig();
-
-        public JdbcConfig getOrderDb() {
-            return orderDb;
-        }
-
-        public void setOrderDb(JdbcConfig orderDb) {
-            this.orderDb = orderDb;
+    public record JdbcConfig(String jdbcUrl, String username, String password, int maxPoolSize) {
+        public JdbcConfig {
+            if (maxPoolSize <= 0) {
+                maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+            }
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class JdbcConfig {
-        private String jdbcUrl;
-        private String username;
-        private String password;
-        private int maxPoolSize = 5;
-
-        public String getJdbcUrl() {
-            return jdbcUrl;
-        }
-
-        public void setJdbcUrl(String jdbcUrl) {
-            this.jdbcUrl = jdbcUrl;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public int getMaxPoolSize() {
-            return maxPoolSize;
-        }
-
-        public void setMaxPoolSize(int maxPoolSize) {
-            this.maxPoolSize = maxPoolSize;
+    public record RedisConfig(String host, int port, String password, int database) {
+        public RedisConfig {
+            if (host == null || host.isBlank()) {
+                host = DEFAULT_REDIS_HOST;
+            }
+            if (port <= 0) {
+                port = DEFAULT_REDIS_PORT;
+            }
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class RedisConfig {
-        private String host = "localhost";
-        private int port = 6379;
-        private String password;
-        private int database = 0;
-
-        public String getHost() {
-            return host;
-        }
-
-        public void setHost(String host) {
-            this.host = host;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public int getDatabase() {
-            return database;
-        }
-
-        public void setDatabase(int database) {
-            this.database = database;
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class AuthConfig {
-        private String tokenUrl;
-        private String clientId;
-        private String clientSecret;
-        private String scope;
-
-        public String getTokenUrl() {
-            return tokenUrl;
-        }
-
-        public void setTokenUrl(String tokenUrl) {
-            this.tokenUrl = tokenUrl;
-        }
-
-        public String getClientId() {
-            return clientId;
-        }
-
-        public void setClientId(String clientId) {
-            this.clientId = clientId;
-        }
-
-        public String getClientSecret() {
-            return clientSecret;
-        }
-
-        public void setClientSecret(String clientSecret) {
-            this.clientSecret = clientSecret;
-        }
-
-        public String getScope() {
-            return scope;
-        }
-
-        public void setScope(String scope) {
-            this.scope = scope;
-        }
+    public record AuthConfig(String tokenUrl, String clientId, String clientSecret, String scope) {
     }
 }
