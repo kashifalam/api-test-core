@@ -5,6 +5,9 @@ import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
 import org.testng.ITestResult;
 
+/**
+ * Runs registered cleanup tasks after each test method.
+ */
 public class CleanupListener implements IInvokedMethodListener {
 
     @Override

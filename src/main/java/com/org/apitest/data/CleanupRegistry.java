@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ * Thread-local LIFO registry for post-test cleanup tasks.
+ */
 public final class CleanupRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(CleanupRegistry.class);
@@ -25,7 +28,7 @@ public final class CleanupRegistry {
             try {
                 cleanup.run();
             } catch (Exception e) {
-                LOG.warn("Cleanup task failed: {}", e.getMessage());
+                LOG.warn("Cleanup task failed", e);
             }
         }
     }

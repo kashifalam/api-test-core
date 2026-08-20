@@ -8,6 +8,9 @@ import org.testng.ITestResult;
 
 import java.util.UUID;
 
+/**
+ * Sets a correlation ID in MDC before each test method for log correlation.
+ */
 public class TraceIdListener implements IInvokedMethodListener {
 
     @Override

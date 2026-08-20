@@ -2,6 +2,9 @@ package com.org.apitest.data;
 
 import java.util.UUID;
 
+/**
+ * Provides per-test isolation keys via ThreadLocal for parallel-safe test data.
+ */
 public final class DataIsolationContext {
 
     private static final ThreadLocal<String> TEST_RUN_ID = new ThreadLocal<>();

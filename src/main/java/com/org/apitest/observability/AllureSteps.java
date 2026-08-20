@@ -3,6 +3,9 @@ package com.org.apitest.observability;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 
+/**
+ * Allure reporting helpers for attaching artifacts and step labels.
+ */
 public final class AllureSteps {
 
     private AllureSteps() {
@@ -10,7 +13,7 @@ public final class AllureSteps {
 
     @Step("{stepName}")
     public static void step(String stepName) {
-        // Annotation drives Allure step; body intentionally empty.
+        // Step name is captured by the @Step annotation.
     }
 
     public static void attachJson(String name, String json) {

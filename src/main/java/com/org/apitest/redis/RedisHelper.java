@@ -4,11 +4,16 @@ import com.org.apitest.config.EnvironmentConfig;
 import com.org.apitest.data.DataIsolationContext;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-public class RedisHelper implements AutoCloseable {
+/**
+ * Redis helper with test-scoped key prefixing. Must be closed after use.
+ */
+public final class RedisHelper implements AutoCloseable {
 
     private final RedisClient client;
+    private final StatefulRedisConnection<String, String> connection;
     private final RedisCommands<String, String> commands;
     private final String keyPrefix;
 
@@ -18,14 +23,15 @@ public class RedisHelper implements AutoCloseable {
 
     public RedisHelper(EnvironmentConfig.RedisConfig config, String keyPrefix) {
         RedisURI.Builder builder = RedisURI.builder()
-                .withHost(config.getHost())
-                .withPort(config.getPort())
-                .withDatabase(config.getDatabase());
-        if (config.getPassword() != null && !config.getPassword().isBlank()) {
-            builder.withPassword(config.getPassword().toCharArray());
+                .withHost(config.host())
+                .withPort(config.port())
+                .withDatabase(config.database());
+        if (config.password() != null && !config.password().isBlank()) {
+            builder.withPassword(config.password().toCharArray());
         }
         this.client = RedisClient.create(builder.build());
-        this.commands = client.connect().sync();
+        this.connection = client.connect();
+        this.commands = connection.sync();
         this.keyPrefix = keyPrefix == null ? "" : keyPrefix;
     }
 
@@ -47,6 +53,9 @@ public class RedisHelper implements AutoCloseable {
 
     @Override
     public void close() {
+        if (connection != null) {
+            connection.close();
+        }
         if (client != null) {
             client.shutdown();
         }
