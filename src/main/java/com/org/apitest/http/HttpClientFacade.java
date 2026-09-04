@@ -1,7 +1,7 @@
 package com.org.apitest.http;
 
-import com.org.apitest.config.ConfigManager;
-import com.org.apitest.config.EnvironmentConfig;
+import com.org.apitest.config.ServiceKey;
+import com.org.apitest.config.ServiceRegistry;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -9,12 +9,17 @@ import io.restassured.specification.RequestSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpClientFacade {
+/**
+ * RestAssured wrapper providing auth, retries, correlation IDs, and request logging.
+ */
+public final class HttpClientFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpClientFacade.class);
 
     private final String baseUri;
     private final AuthTokenProvider authTokenProvider;
+    private final CorrelationIdFilter correlationIdFilter = new CorrelationIdFilter();
+    private final SensitiveDataMaskingFilter sensitiveDataMaskingFilter = new SensitiveDataMaskingFilter();
 
     public HttpClientFacade(String baseUri) {
         this(baseUri, AuthTokenProvider.fromConfig());
@@ -28,16 +33,13 @@ public class HttpClientFacade {
     public RequestSpecification given() {
         RequestSpecification spec = RestAssured.given()
                 .baseUri(baseUri)
-                .filter(new CorrelationIdFilter())
-                .filter(new SensitiveDataMaskingFilter())
+                .filter(correlationIdFilter)
+                .filter(sensitiveDataMaskingFilter)
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .relaxedHTTPSValidation();
 
-        String token = authTokenProvider.getToken();
-        if (token != null && !token.isBlank()) {
-            spec.header("Authorization", "Bearer " + token);
-        }
+        authTokenProvider.getToken().ifPresent(token -> spec.header("Authorization", "Bearer " + token));
         return spec;
     }
 
@@ -69,12 +71,7 @@ public class HttpClientFacade {
         });
     }
 
-    public static HttpClientFacade forService(String serviceKey) {
-        EnvironmentConfig config = ConfigManager.get();
-        return switch (serviceKey) {
-            case "order" -> new HttpClientFacade(config.getServices().getOrder().getBaseUrl());
-            case "payment" -> new HttpClientFacade(config.getServices().getPayment().getBaseUrl());
-            default -> throw new IllegalArgumentException("Unknown service: " + serviceKey);
-        };
+    public static HttpClientFacade forService(ServiceKey serviceKey) {
+        return new HttpClientFacade(ServiceRegistry.baseUrl(serviceKey));
     }
 }

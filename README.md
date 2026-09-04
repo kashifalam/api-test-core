@@ -8,9 +8,20 @@ Enterprise-grade API automation core engine for multi-team microservices testing
 - JDBC helper (HikariCP + PostgreSQL)
 - Redis helper (Lettuce)
 - TestNG base test + suite listeners
-- YAML environment config with secret placeholder resolution
+- Immutable YAML environment config with fail-fast secret resolution
 - Allure step utilities
 - Parallel-safe test data isolation and cleanup registry
+
+## Coding Standards
+
+This project enforces Java best practices via:
+
+```bash
+mvn validate    # Checkstyle + Spotless + Enforcer
+mvn spotless:apply   # Auto-fix formatting
+```
+
+Standards include: immutable records for config, `final` utility/service classes, constructor injection, thread-safe configuration access, proper resource cleanup, and JavaDoc on public APIs.
 
 ## Build & Install
 
@@ -21,8 +32,6 @@ mvn clean install
 This publishes `com.org.apitest:api-test-core:1.0.0-SNAPSHOT` to your local Maven repository.
 
 ## Usage in Consumer Projects
-
-Add dependency:
 
 ```xml
 <dependency>
@@ -40,8 +49,8 @@ mvn test -Denv=qa
 
 ## Configuration
 
-Environment YAML files live in `src/main/resources/environments/`. Secrets are resolved from environment variables or system properties using `${VAR_NAME}` syntax.
+Environment YAML files live in `src/main/resources/environments/`. Secrets are resolved from environment variables using `${VAR_NAME}` syntax. Missing required variables fail fast at startup.
 
 ## Jenkins
 
-Consumer repos should install this artifact from your Maven repository (Nexus/Artifactory) or build and install from source in a pipeline stage before running service tests.
+Consumer repos should install this artifact from your Maven repository (Nexus/Artifactory) or build from source in a pipeline stage before running service tests.

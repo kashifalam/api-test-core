@@ -8,20 +8,12 @@ import io.restassured.specification.FilterableResponseSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.regex.Pattern;
-
-public class SensitiveDataMaskingFilter implements Filter {
+/**
+ * Logs HTTP traffic with sensitive fields masked.
+ */
+public final class SensitiveDataMaskingFilter implements Filter {
 
     private static final Logger LOG = LoggerFactory.getLogger(SensitiveDataMaskingFilter.class);
-    private static final String MASK = "****";
-
-    private static final Pattern[] SENSITIVE_PATTERNS = {
-            Pattern.compile("(\"password\"\\s*:\\s*\")([^\"]*)(\")", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("(\"client_secret\"\\s*:\\s*\")([^\"]*)(\")", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("(\"ssn\"\\s*:\\s*\")([^\"]*)(\")", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("(Authorization:\\s*Bearer\\s+)(\\S+)", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("(\"email\"\\s*:\\s*\")([^\"@]+)(@[^\"]+)(\")", Pattern.CASE_INSENSITIVE)
-    };
 
     @Override
     public Response filter(FilterableRequestSpecification requestSpec,
@@ -42,14 +34,8 @@ public class SensitiveDataMaskingFilter implements Filter {
             return null;
         }
         String masked = input;
-        for (Pattern pattern : SENSITIVE_PATTERNS) {
-            if (pattern.pattern().contains("email")) {
-                masked = pattern.matcher(masked).replaceAll("$1" + MASK + "$3$4");
-            } else if (pattern.pattern().contains("Authorization")) {
-                masked = pattern.matcher(masked).replaceAll("$1" + MASK);
-            } else {
-                masked = pattern.matcher(masked).replaceAll("$1" + MASK + "$3");
-            }
+        for (MaskRule rule : MaskRule.values()) {
+            masked = rule.apply(masked);
         }
         return masked;
     }

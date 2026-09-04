@@ -15,8 +15,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class JdbcHelper implements AutoCloseable {
+/**
+ * JDBC helper backed by a HikariCP connection pool. Must be closed after use.
+ */
+public final class JdbcHelper implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcHelper.class);
 
@@ -24,20 +28,34 @@ public class JdbcHelper implements AutoCloseable {
 
     public JdbcHelper(EnvironmentConfig.JdbcConfig config) {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(config.getJdbcUrl());
-        hikariConfig.setUsername(config.getUsername());
-        hikariConfig.setPassword(config.getPassword());
-        hikariConfig.setMaximumPoolSize(config.getMaxPoolSize());
+        hikariConfig.setJdbcUrl(config.jdbcUrl());
+        hikariConfig.setUsername(config.username());
+        hikariConfig.setPassword(config.password());
+        hikariConfig.setMaximumPoolSize(config.maxPoolSize());
         hikariConfig.setPoolName("api-test-jdbc");
         this.dataSource = new HikariDataSource(hikariConfig);
     }
 
+    /**
+     * Returns the first row as a map, or an empty map when no rows match.
+     */
     public Map<String, Object> queryForMap(String sql, Object... params) {
         List<Map<String, Object>> rows = queryForList(sql, params);
         if (rows.isEmpty()) {
             return Map.of();
         }
         return rows.getFirst();
+    }
+
+    /**
+     * Returns the first row when present.
+     */
+    public Optional<Map<String, Object>> queryForSingleRow(String sql, Object... params) {
+        List<Map<String, Object>> rows = queryForList(sql, params);
+        if (rows.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(rows.getFirst());
     }
 
     public List<Map<String, Object>> queryForList(String sql, Object... params) {
