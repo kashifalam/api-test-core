@@ -20,8 +20,9 @@ public final class SensitiveDataMaskingFilter implements Filter {
                            FilterableResponseSpecification responseSpec,
                            FilterContext ctx) {
         LOG.info(">>> {} {}", requestSpec.getMethod(), requestSpec.getURI());
-        if (requestSpec.getBody() != null) {
-            LOG.debug("Request body: {}", mask(String.valueOf(requestSpec.getBody())));
+        Object requestBody = requestSpec.getBody();
+        if (requestBody != null) {
+            LOG.debug("Request body: {}", mask(String.valueOf(requestBody)));
         }
         Response response = ctx.next(requestSpec, responseSpec);
         LOG.info("<<< Status: {}", response.getStatusCode());
