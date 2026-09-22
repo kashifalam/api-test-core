@@ -1,0 +1,27 @@
+{
+  "name": "API Test Platform",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "repositoryDependencies": [
+    "github.com/kashifalam/api-test-services",
+    "github.com/kashifalam/order-service",
+    "github.com/kashifalam/payment-service"
+  ],
+  "ports": [
+    { "name": "order-service", "port": 8081 },
+    { "name": "payment-service", "port": 8082 }
+  ],
+  "terminals": [
+    {
+      "name": "order-service logs",
+      "command": "bash .cursor/logs.sh order-service",
+      "description": "Follows the order-service container logs."
+    },
+    {
+      "name": "payment-service logs",
+      "command": "bash .cursor/logs.sh payment-service",
+      "description": "Follows the payment-service container logs."
+    }
+  ]
+}
